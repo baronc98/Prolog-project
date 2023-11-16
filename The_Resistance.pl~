@@ -1,4 +1,6 @@
 % THE DESCRIPTION OF THE EXERCISE IS IN THE PRESENTATION FILE
+
+
 :- use_module(library(lists)).
 
 % . defined as x, - as y
