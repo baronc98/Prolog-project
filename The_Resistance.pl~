@@ -1,0 +1,91 @@
+:- use_module(library(lists)).
+
+% . defined as x, - as y
+
+letter(x, Found, Updated) :- append(Found, ["E"], Updated).
+letter(y, Found, Updated) :- append(Found, ["T"], Updated).
+letter(x, y, Found, Updated) :- append(Found, ["A"], Updated).
+letter(x, x, Found, Updated) :- append(Found, ["I"], Updated).
+letter(y, x, Found, Updated) :- append(Found, ["N"], Updated).
+letter(y, y, Found, Updated) :- append(Found, ["M"], Updated). 		
+letter(y, x, x, Found, Updated) :- append(Found, ["D"], Updated).
+letter(y, y, x, Found, Updated) :- append(Found, ["G"], Updated).
+letter(y, x, y, Found, Updated) :- append(Found, ["K"], Updated).
+letter(y, y, y, Found, Updated) :- append(Found, ["O"], Updated).
+letter(x, y, x,Found, Updated) :- append(Found, ["R"], Updated).
+letter(x, x, x, Found, Updated) :- append(Found, ["S"], Updated).
+letter(x, x, y, Found, Updated) :- append(Found, ["U"], Updated).
+letter(x, y, y, Found, Updated) :- append(Found, ["W"], Updated).
+letter(y, x, x, x, Found, Updated) :- append(Found, ["B"], Updated).
+letter(y, x, y, x, Found, Updated) :- append(Found, ["C"], Updated). 
+letter(x, x, y, x, Found, Updated) :- append(Found, ["F"], Updated).
+letter(x, x, x, x, Found, Updated) :- append(Found, ["H"], Updated).
+letter(x, y, y, y, Found, Updated) :- append(Found, ["J"], Updated).	
+letter(x, y, x, x, Found, Updated) :- append(Found, ["L"], Updated).	
+letter(x, y, y, x, Found, Updated) :- append(Found, ["P"], Updated).	
+letter(y, y, x, y, Found, Updated) :- append(Found, ["Q"], Updated). 	
+letter(x, x, x, y, Found, Updated) :- append(Found, ["V"], Updated).
+letter(y, x, x, y, Found, Updated) :- append(Found, ["X"], Updated).
+letter(y, x, y, y, Found, Updated) :- append(Found, ["Y"], Updated).
+letter(y, y, x, x, Found, Updated) :- append(Found, ["Z"], Updated).
+
+
+
+dictionary(["H","E","L","L"]).
+dictionary(["H","E","L","L","O"]).
+dictionary(["O","W","O","R","L","D"]).
+dictionary(["W","O","R","L","D"]).
+dictionary(["T","E","S","T"]).
+
+dictionary(["D","U"]).
+dictionary(["T","E","T","E"]).
+dictionary(["B","A","C"]).
+dictionary(["D","U","C"]).
+dictionary(["B","A","N","N"]).
+
+
+find_match([], Found, Result) :- append(Found, [], Result).
+    
+find_match([X|L], Found, Result) :- 
+    letter(X, Found, Updated),
+    find_match(L, Updated, Result).
+    
+find_match([X,Y|L], Found, Result) :- 
+    letter(X, Y, Found, Updated),
+    find_match(L, Updated, Result).
+
+find_match([X,Y,Z|L], Found, Result):-
+    letter(X, Y, Z, Found, Updated),
+    find_match(L, Updated, Result).
+
+find_match([X,Y,Z,W|L], Found, Result):-
+    letter(X, Y, Z, W, Found, Updated),
+    find_match(L, Updated, Result).
+
+
+decode_results([], FinalWords, Result_decoding) :- append(FinalWords, [], Result_decoding).
+
+decode_results([X|L], FinalWords, Results_decoding) :-  
+    findall(Found, decode_single_result(X, [], [], Found), Res),
+    append(Res, FinalWords, Up_FinalWords),
+    decode_results(L, Up_FinalWords, Results_decoding).
+
+
+decode_single_result([], _, Words, Found) :- append(Words, [], Found).
+
+decode_single_result([X], Memory, Words, Found) :- 
+    append(Memory, [X], NewWord), dictionary(NewWord), append(Words, [NewWord], UpWords), decode_single_result([], Memory, UpWords, Found).
+  
+decode_single_result([X,Y|L], Memory, Words, Found) :- 
+    append(Memory, [X], NewWord), dictionary(NewWord), append(Words, [NewWord], UpWords), decode_single_result([Y|L], [], UpWords, Found); 
+    append(Memory, [X], NewWord), decode_single_result([Y|L], NewWord, Words, Found).
+
+% first sequence: 
+% ......-...-..---.-----.-..-..-..   ==>  x,x,x,x,x,x,y,x,x,x,y,x,x,y,y,y,x,y,y,y,y,y,x,y,x,x,y,x,x,y,x,x
+% HELL, HELLO, OWORLD, WORLD, TEST
+% 
+% second sequence:
+% -....--.-.  ==>  y,x,x,x,x,y,y,x,y,x
+% BAC, BANN, DUC, DU TETE
+% 
+% ?- findall(Result, find_match([INSERT_SEQUENCE_OF_x,y_HERE], [], Result), All_Results), decode_results(All_Results, [], Results_decoding). 
